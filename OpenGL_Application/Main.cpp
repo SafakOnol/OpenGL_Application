@@ -1,27 +1,41 @@
-#include <glew.h>
-#include <glut.h>
-#include <freeglut.h>
+#include <GL\glew.h>
+#include <GL\freeglut.h>
 #include <stdio.h>
+#include "ogldev_math_3d.h"
+
+GLuint VBO;
 
 static void RenderSceneCB()
 {
-	static GLclampf c = 0.0f;
-	glClearColor(c, c, c, c);
-	printf("%f\n", c);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	c += 1.0f / 256.0f;
-	if (c >= 1.0f) c = 0.0f;
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glClear(GL_COLOR_BUFFER_BIT); // get rid of screen clutter if any
-	glutPostRedisplay(); // forces screen to keep rendering
-	glutSwapBuffers(); // eliminate screen tearing
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glDrawArrays(GL_POINTS, 0, 1);
+
+	glDisableVertexAttribArray(0);
+
+	glutSwapBuffers();
+}
+
+static void CreateVertexBuffer()
+{
+	Vector3f Vertices[1];
+	Vertices[0] = Vector3f(0.0f, 0.0f, 0.0f);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
 }
 
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	int width = 800;
 	int height = 600;
 	glutInitWindowSize(width, height);
@@ -29,11 +43,21 @@ int main(int argc, char** argv)
 	int x = 200;
 	int y = 100;
 	glutInitWindowPosition(x, y);
-	int win = glutCreateWindow("Tutorial 01");
+	int win = glutCreateWindow("Tutorial 02");
 	printf("window id: %d\n", win);
+
+	// Must be done after glut is initialized!
+	GLenum res = glewInit();
+	if (res != GLEW_OK)
+	{
+		fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
+		return 1;
+	}
 
 	GLclampf Red = 0.0f, Green = 0.0f, Blue = 0.0f, Alpha = 0.0f;
 	glClearColor(Red, Green, Blue, Alpha);
+
+	CreateVertexBuffer();
 
 	glutDisplayFunc(RenderSceneCB);
 

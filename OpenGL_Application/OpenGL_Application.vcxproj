@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include;..\Include\assimp5</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +131,52 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Include\glfx.h" />
+    <ClInclude Include="..\Include\ogldev.h" />
+    <ClInclude Include="..\Include\ogldev_app.h" />
+    <ClInclude Include="..\Include\ogldev_atb.h" />
+    <ClInclude Include="..\Include\ogldev_backend.h" />
+    <ClInclude Include="..\Include\ogldev_basic_glfw_camera.h" />
+    <ClInclude Include="..\Include\ogldev_basic_lighting.h" />
+    <ClInclude Include="..\Include\ogldev_basic_mesh.h" />
+    <ClInclude Include="..\Include\ogldev_callbacks.h" />
+    <ClInclude Include="..\Include\ogldev_camera.h" />
+    <ClInclude Include="..\Include\ogldev_cubemap_texture.h" />
+    <ClInclude Include="..\Include\ogldev_engine_common.h" />
+    <ClInclude Include="..\Include\ogldev_flat_passthru_technique.h" />
+    <ClInclude Include="..\Include\ogldev_glfw.h" />
+    <ClInclude Include="..\Include\ogldev_glfw_backend.h" />
+    <ClInclude Include="..\Include\ogldev_glut_backend.h" />
+    <ClInclude Include="..\Include\ogldev_io_buffer.h" />
+    <ClInclude Include="..\Include\ogldev_keys.h" />
+    <ClInclude Include="..\Include\ogldev_lights_common.h" />
+    <ClInclude Include="..\Include\ogldev_material.h" />
+    <ClInclude Include="..\Include\ogldev_math_3d.h" />
+    <ClInclude Include="..\Include\ogldev_mesh_common.h" />
+    <ClInclude Include="..\Include\ogldev_new_lighting.h" />
+    <ClInclude Include="..\Include\ogldev_phong_renderer.h" />
+    <ClInclude Include="..\Include\ogldev_pipeline.h" />
+    <ClInclude Include="..\Include\ogldev_random_texture.h" />
+    <ClInclude Include="..\Include\ogldev_shadow_cube_map_fbo.h" />
+    <ClInclude Include="..\Include\ogldev_shadow_mapping_technique.h" />
+    <ClInclude Include="..\Include\ogldev_shadow_mapping_technique_point_light.h" />
+    <ClInclude Include="..\Include\ogldev_shadow_map_fbo.h" />
+    <ClInclude Include="..\Include\ogldev_shadow_map_offset_texture.h" />
+    <ClInclude Include="..\Include\ogldev_skinned_mesh.h" />
+    <ClInclude Include="..\Include\ogldev_skinning_technique.h" />
+    <ClInclude Include="..\Include\ogldev_sprite_technique.h" />
+    <ClInclude Include="..\Include\ogldev_texture.h" />
+    <ClInclude Include="..\Include\ogldev_tex_technique.h" />
+    <ClInclude Include="..\Include\ogldev_types.h" />
+    <ClInclude Include="..\Include\ogldev_util.h" />
+    <ClInclude Include="..\Include\ogldev_vulkan.h" />
+    <ClInclude Include="..\Include\ogldev_vulkan_core.h" />
+    <ClInclude Include="..\Include\ogldev_win32_control.h" />
+    <ClInclude Include="..\Include\ogldev_world_transform.h" />
+    <ClInclude Include="..\Include\ogldev_xcb_control.h" />
+    <ClInclude Include="..\Include\technique.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
