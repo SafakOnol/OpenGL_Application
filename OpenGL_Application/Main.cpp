@@ -1,6 +1,8 @@
-#include <GL\glew.h>
-#include <GL\freeglut.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <stdio.h>
+#include <string.h>
+
 #include "ogldev_math_3d.h"
 
 GLuint VBO;
@@ -24,9 +26,9 @@ static void RenderSceneCB()
 
 static void CreateVertexBuffer()
 {
-	glEnable(GL_CULL_FACE); // enable face culling
-	glFrontFace(GL_CW); // tell OpenGL that ClockWise is front facing
-	glCullFace(GL_FRONT); // cull front facing triangles by default
+	//glEnable(GL_CULL_FACE); // enable face culling
+	//glFrontFace(GL_CW); // tell OpenGL that ClockWise is front facing
+	//glCullFace(GL_FRONT); // cull front facing triangles by default
 
 	//define triangle vertices
 	Vector3f Vertices[3];
@@ -38,6 +40,104 @@ static void CreateVertexBuffer()
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+}
+
+static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
+{
+	// 1: Create the shader handle
+	GLuint ShaderObj = glCreateShader(ShaderType);
+
+	if (ShaderObj == 0) {
+		fprintf(stderr, "Error creating shader type %d\n", ShaderType);
+		exit(0);
+	}
+
+	// The array of string pointers
+	const GLchar* p[1];
+	p[0] = pShaderText;
+
+	// The array of length
+	GLint Lengths[1];
+	Lengths[0] = (GLint)strlen(pShaderText);
+
+	// 2: Load shader text into the shader handle
+	// p1: Shader handle
+	// p2: Number of elements in each of the arrays (p3 & p4)
+	// p3: Pointers to an array of string
+	// p4: Pointers to an array of lengths    
+	glShaderSource(ShaderObj, 1, p, Lengths);
+
+	glCompileShader(ShaderObj);
+
+	// 3: Check compilation errors
+	GLint success;
+	glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
+
+	if (!success) {
+		GLchar InfoLog[1024];
+		glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
+		fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
+		exit(1);
+	}
+
+	// 4: If there's no compilation errors, attach the shader to the handle
+	// p1: Program handle
+	// p2: Shader handle
+	glAttachShader(ShaderProgram, ShaderObj);
+}
+
+const char* pVSFileName = "shader.vs";
+const char* pFSFileName = "shader.fs";
+
+static void CompileShaders()
+{
+	// 5: Load the source for the shaders, use AddShader() to compile and attach them
+	GLuint ShaderProgram = glCreateProgram();
+
+	if (ShaderProgram == 0) {
+		fprintf(stderr, "Error creating shader program\n");
+		exit(1);
+	}
+
+	std::string vs, fs;
+
+	if (!ReadFile(pVSFileName, vs)) {
+		exit(1);
+	};
+
+	AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+
+	if (!ReadFile(pFSFileName, fs)) {
+		exit(1);
+	};
+
+	AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+
+	GLint Success = 0;
+	GLchar ErrorLog[1024] = { 0 };
+
+	// 6: Link the program with program handle
+	glLinkProgram(ShaderProgram);
+
+	// check compilation errors
+	glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
+	if (Success == 0) {
+		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+		exit(1);
+	}
+
+	// check if linked program is compatible with the current state of OpenGL runtime
+	glValidateProgram(ShaderProgram);
+	glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
+	if (!Success) {
+		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
+		exit(1);
+	}
+
+	// 7: Activate the program and the shaders on the GPU
+	glUseProgram(ShaderProgram);
 }
 
 int main(int argc, char** argv)
@@ -66,6 +166,8 @@ int main(int argc, char** argv)
 	glClearColor(Red, Green, Blue, Alpha);
 
 	CreateVertexBuffer();
+
+	CompileShaders();
 
 	glutDisplayFunc(RenderSceneCB);
 

@@ -18,6 +18,9 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ogldev_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\ogldev_math_3d.h">
@@ -152,5 +155,9 @@
     <ClInclude Include="..\Include\technique.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Common\Shaders\shader.fs" />
+    <None Include="Common\Shaders\shader.vs" />
   </ItemGroup>
 </Project>
