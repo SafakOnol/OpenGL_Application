@@ -1,15 +1,31 @@
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <math.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 #include "ogldev_math_3d.h"
 
 GLuint VBO;
+GLint gScaleLocation;
 
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	// set the scale function
+	static float Scale = 0.0f;
+	static float Delta = 0.005f;
+
+	Scale += Delta;
+	if ((Scale >= 1.0f) || (Scale <= -1.0f)) 
+	{
+		Delta *= -1.0f;
+	}
+
+	// send the scale value down to shader
+	glUniform1f(gScaleLocation, Scale);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -20,6 +36,8 @@ static void RenderSceneCB()
 	glDrawArrays(GL_TRIANGLES, 0, 3); // Create triangles from every 3 consecutive coordinates in the bound vertex buffer object
 
 	glDisableVertexAttribArray(0);
+
+	glutPostRedisplay();
 
 	glutSwapBuffers();
 }
@@ -124,6 +142,14 @@ static void CompileShaders()
 	if (Success == 0) {
 		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
 		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+		exit(1);
+	}
+
+	// allocate the uniform location index
+	// this should be done after linking the program with glLinkProgram
+	gScaleLocation = glGetUniformLocation(ShaderProgram, "gScale");
+	if (gScaleLocation == -1) {
+		printf("Error getting uniform location of 'gScale'\n");
 		exit(1);
 	}
 
