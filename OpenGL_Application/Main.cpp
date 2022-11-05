@@ -9,37 +9,55 @@
 
 GLuint VBO;
 //GLint gScaleLocation;
-GLint gTranslationLocation;
+//GLint gTranslationLocation;
+GLint gRotationLocation;
 
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// set the scale function
-	static float Scale = 0.0f;
-	static float Delta = 0.001f;
+	/*static float Scale = 0.0f;
+	static float Delta = 0.001f;*/
+	
+	//Scale += Delta;
+	//if ((Scale >= 1.0f) || (Scale <= -1.0f)) 
+	//{
+	//	Delta *= -1.0f;
+	//}
 
-	Scale += Delta;
-	if ((Scale >= 1.0f) || (Scale <= -1.0f)) 
-	{
-		Delta *= -1.0f;
-	}
+	// send the scale value down to shader
+	//glUniform1f(gScaleLocation, Scale);
 
 	// Construct Translation Matrix
-	Matrix4f Translation(1.0f, 0.0f, 0.0f, Scale * 2.0f,
+	/*Matrix4f Translation(1.0f, 0.0f, 0.0f, Scale * 2.0f,
 						 0.0f, 1.0f, 0.0f, Scale,
 						 0.0f, 0.0f, 1.0f, 0.0f,
-						 0.0f, 0.0f, 0.0f, 1.0f);
+						 0.0f, 0.0f, 0.0f, 1.0f);*/
 
 	// Load the matrix into the shader
 	// 1. The index that syncs c++ matrix with the matrix in the shader
 	// 2. Number of matrices to send down to shader
 	// 3. Decide if matrix is row-major(true) or column-major(false)
 	// 4. The address of the array
-	glUniformMatrix4fv(gTranslationLocation, 1, GL_TRUE, &Translation.m[0][0]);
+	//glUniformMatrix4fv(gTranslationLocation, 1, GL_TRUE, &Translation.m[0][0]);
 
-	// send the scale value down to shader
-	//glUniform1f(gScaleLocation, Scale);
+	// set the angle function
+	static float AngleInRadians = 0.0f;
+	static float Delta = 0.001f;
+
+	AngleInRadians += Delta;
+	if ((AngleInRadians >= 1.5708f) || (AngleInRadians <= -1.5708f))
+	{
+		Delta *= -1.0f;
+	}
+
+	Matrix4f Rotation(	cosf(AngleInRadians),	-sinf(AngleInRadians),	0.0f, 0.0f,
+						sinf(AngleInRadians),	cosf(AngleInRadians),	0.0f, 0.0f,
+						0.0f,					0.0f,					1.0f, 0.0f,
+						0.0f,					0.0f,					0.0f, 1.0f);
+
+	glUniformMatrix4fv(gRotationLocation, 1, GL_TRUE, &Rotation.m[0][0]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -167,10 +185,17 @@ static void CompileShaders()
 		exit(1);
 	}*/
 
-	gTranslationLocation = glGetUniformLocation(ShaderProgram, "gTranslation");
+	/*gTranslationLocation = glGetUniformLocation(ShaderProgram, "gTranslation");
 	if (gTranslationLocation == -1) 
 	{
 		printf("Error getting uniform location of 'gTranslation'\n");
+		exit(1);
+	}*/
+
+	gRotationLocation = glGetUniformLocation(ShaderProgram, "gRotation");
+	if (gRotationLocation == -1)
+	{
+		printf("Error getting uniform location of 'gRotation'\n");
 		exit(1);
 	}
 
@@ -191,8 +216,8 @@ int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-	int width = 800;
-	int height = 600;
+	int width = 1200;
+	int height = 800;
 	glutInitWindowSize(width, height);
 
 	int x = 200;
