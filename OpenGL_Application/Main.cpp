@@ -8,7 +8,8 @@
 #include "ogldev_math_3d.h"
 
 GLuint VBO;
-GLint gScaleLocation;
+//GLint gScaleLocation;
+GLint gTranslationLocation;
 
 static void RenderSceneCB()
 {
@@ -16,7 +17,7 @@ static void RenderSceneCB()
 
 	// set the scale function
 	static float Scale = 0.0f;
-	static float Delta = 0.005f;
+	static float Delta = 0.001f;
 
 	Scale += Delta;
 	if ((Scale >= 1.0f) || (Scale <= -1.0f)) 
@@ -24,8 +25,21 @@ static void RenderSceneCB()
 		Delta *= -1.0f;
 	}
 
+	// Construct Translation Matrix
+	Matrix4f Translation(1.0f, 0.0f, 0.0f, Scale * 2.0f,
+						 0.0f, 1.0f, 0.0f, Scale,
+						 0.0f, 0.0f, 1.0f, 0.0f,
+						 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Load the matrix into the shader
+	// 1. The index that syncs c++ matrix with the matrix in the shader
+	// 2. Number of matrices to send down to shader
+	// 3. Decide if matrix is row-major(true) or column-major(false)
+	// 4. The address of the array
+	glUniformMatrix4fv(gTranslationLocation, 1, GL_TRUE, &Translation.m[0][0]);
+
 	// send the scale value down to shader
-	glUniform1f(gScaleLocation, Scale);
+	//glUniform1f(gScaleLocation, Scale);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -147,9 +161,16 @@ static void CompileShaders()
 
 	// allocate the uniform location index
 	// this should be done after linking the program with glLinkProgram
-	gScaleLocation = glGetUniformLocation(ShaderProgram, "gScale");
+	/*gScaleLocation = glGetUniformLocation(ShaderProgram, "gScale");
 	if (gScaleLocation == -1) {
 		printf("Error getting uniform location of 'gScale'\n");
+		exit(1);
+	}*/
+
+	gTranslationLocation = glGetUniformLocation(ShaderProgram, "gTranslation");
+	if (gTranslationLocation == -1) 
+	{
+		printf("Error getting uniform location of 'gTranslation'\n");
 		exit(1);
 	}
 
