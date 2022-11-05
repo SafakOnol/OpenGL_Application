@@ -159,5 +159,7 @@
   <ItemGroup>
     <None Include="Common\Shaders\shader.fs" />
     <None Include="Common\Shaders\shader.vs" />
+    <None Include="shader Frag.glsl" />
+    <None Include="shaderVert.glsl" />
   </ItemGroup>
 </Project>

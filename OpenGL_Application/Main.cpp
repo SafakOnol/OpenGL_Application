@@ -104,8 +104,8 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 	glAttachShader(ShaderProgram, ShaderObj);
 }
 
-const char* pVSFileName = "shader.vs";
-const char* pFSFileName = "shader.fs";
+const char* pVSFileName = "shaderVert.glsl";
+const char* pFSFileName = "shader Frag.glsl";
 
 static void CompileShaders()
 {

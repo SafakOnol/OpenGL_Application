@@ -182,6 +182,8 @@
   <ItemGroup>
     <None Include="Common\Shaders\shader.fs" />
     <None Include="Common\Shaders\shader.vs" />
+    <None Include="shader Frag.glsl" />
+    <None Include="shaderVert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
