@@ -33,13 +33,73 @@ static void ScalingExample()
 	glUniformMatrix4fv(gScalingLocation, 1, GL_TRUE, &Scaling.m[0][0]);
 }
 
+static void CombiningTransformationsExample1() 
+{
+	static float Scale = 1.5f;
+
+	Matrix4f Scaling(Scale, 0.0f, 0.0f, 0.0f,
+		0.0f, Scale, 0.0f, 0.0f,
+		0.0f, 0.0f, Scale, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+
+	static float Pos = 0.0f;
+	static float Delta = 0.001f;
+
+	Pos += Delta;
+	if ((Pos >= 0.5f) || (Pos <= -0.5f))
+	{
+		Delta *= -1.0f;
+	}
+
+	Matrix4f Translation(	1.0f, 0.0f, 0.0f, Pos,
+							0.0f, 1.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 1.0f, 0.0f,
+							0.0f, 0.0f, 0.0f, 1.0f);
+	//Matrix4f FinalTransform = Translation * Scaling;
+	Matrix4f FinalTransform = Scaling * Translation;
+
+	glUniformMatrix4fv(gScalingLocation, 1, GL_TRUE, &FinalTransform.m[0][0]);
+}
+
+static void CombiningTransformationsExample2()
+{
+	static float Scale = 0.25f;
+
+	Matrix4f Scaling(	Scale, 0.0f, 0.0f, 0.0f,
+						0.0f, Scale, 0.0f, 0.0f,
+						0.0f, 0.0f, Scale, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f);
+
+	static float AngleInRadians = 0.0f;
+	static float Delta = 0.01f;
+
+	AngleInRadians += Delta;
+
+	Matrix4f Rotation(	cosf(AngleInRadians),	-sinf(AngleInRadians),	0.0f,	0.0f,
+						sinf(AngleInRadians),	cosf(AngleInRadians),	0.0f,	0.0f,
+						0.0f,					0.0f,					1.0f,	0.0f,
+						0.0f,					0.0f,					0.0f,	1.0f);
+
+	static float Pos = 0.50f;
+
+	Matrix4f Translation(1.0f, 0.0f, 0.0f, Pos,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+
+	//Matrix4f FinalTransform = Translation * Rotation * Scaling;
+	Matrix4f FinalTransform = Rotation * Translation * Scaling;
+
+	glUniformMatrix4fv(gScalingLocation, 1, GL_TRUE, &FinalTransform.m[0][0]);
+}
+
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	ScalingExample();
+	//ScalingExample();
 	//CombiningTransformationsExample1();
-	//CombiningTransformationsExample2();
+	CombiningTransformationsExample2();
 
 	// set the scale function
 	/*static float Scale = 0.0f;
@@ -248,8 +308,8 @@ int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-	int width = 1200;
-	int height = 800;
+	int width = 1000;
+	int height = 1000;
 	glutInitWindowSize(width, height);
 
 	int x = 200;
