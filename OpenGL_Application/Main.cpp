@@ -10,11 +10,36 @@
 GLuint VBO;
 //GLint gScaleLocation;
 //GLint gTranslationLocation;
-GLint gRotationLocation;
+//GLint gRotationLocation;
+GLint gScalingLocation;
+
+static void ScalingExample()
+{
+	static float Scale = 1.0f;
+	static float Delta = 0.001f;
+
+	Scale += Delta;
+	if ((Scale >= 1.5f) || (Scale <= 0.5)) 
+	{
+		Delta *= -1.0f;
+	}
+
+	// Construct Translation Matrix
+	Matrix4f Scaling(	Scale,	0.0f,	0.0f,	0.0f,
+						0.0f,	Scale,	0.0f,	0.0f,
+						0.0f,	0.0f,	Scale,	0.0f,
+						0.0f,	0.0f,	0.0f,	1.0f);
+	// Load the matrix into the shader
+	glUniformMatrix4fv(gScalingLocation, 1, GL_TRUE, &Scaling.m[0][0]);
+}
 
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	ScalingExample();
+	//CombiningTransformationsExample1();
+	//CombiningTransformationsExample2();
 
 	// set the scale function
 	/*static float Scale = 0.0f;
@@ -43,7 +68,7 @@ static void RenderSceneCB()
 	//glUniformMatrix4fv(gTranslationLocation, 1, GL_TRUE, &Translation.m[0][0]);
 
 	// set the angle function
-	static float AngleInRadians = 0.0f;
+	/*static float AngleInRadians = 0.0f;
 	static float Delta = 0.001f;
 
 	AngleInRadians += Delta;
@@ -57,7 +82,7 @@ static void RenderSceneCB()
 						0.0f,					0.0f,					1.0f, 0.0f,
 						0.0f,					0.0f,					0.0f, 1.0f);
 
-	glUniformMatrix4fv(gRotationLocation, 1, GL_TRUE, &Rotation.m[0][0]);
+	glUniformMatrix4fv(gRotationLocation, 1, GL_TRUE, &Rotation.m[0][0]);*/
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -99,7 +124,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 
 	if (ShaderObj == 0) {
 		fprintf(stderr, "Error creating shader type %d\n", ShaderType);
-		exit(0);
+		exit(1);
 	}
 
 	// The array of string pointers
@@ -137,7 +162,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 }
 
 const char* pVSFileName = "shaderVert.glsl";
-const char* pFSFileName = "shader Frag.glsl";
+const char* pFSFileName = "shaderFrag.glsl";
 
 static void CompileShaders()
 {
@@ -192,10 +217,17 @@ static void CompileShaders()
 		exit(1);
 	}*/
 
-	gRotationLocation = glGetUniformLocation(ShaderProgram, "gRotation");
+	/*gRotationLocation = glGetUniformLocation(ShaderProgram, "gRotation");
 	if (gRotationLocation == -1)
 	{
 		printf("Error getting uniform location of 'gRotation'\n");
+		exit(1);
+	}*/
+
+	gScalingLocation = glGetUniformLocation(ShaderProgram, "gScaling");
+	if (gScalingLocation == -1)
+	{
+		printf("Error getting uniform location of 'gScaling'\n");
 		exit(1);
 	}
 
