@@ -15,11 +15,11 @@ GLint gScalingLocation;
 
 static void ScalingExample()
 {
-	static float Scale = 1.0f;
-	static float Delta = 0.001f;
+	static float Scale = 0.5f;
+	static float Delta = 0.0001f;
 
 	Scale += Delta;
-	if ((Scale >= 1.5f) || (Scale <= 0.5)) 
+	if ((Scale >= 0.8f) || (Scale <= 0.3)) 
 	{
 		Delta *= -1.0f;
 	}
@@ -82,10 +82,10 @@ static void CombiningTransformationsExample2()
 
 	static float Pos = 0.50f;
 
-	Matrix4f Translation(1.0f, 0.0f, 0.0f, Pos,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f);
+	Matrix4f Translation(	1.0f, 0.0f, 0.0f, Pos,
+							0.0f, 1.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 1.0f, 0.0f,
+							0.0f, 0.0f, 0.0f, 1.0f);
 
 	//Matrix4f FinalTransform = Translation * Rotation * Scaling;
 	Matrix4f FinalTransform = Rotation * Translation * Scaling;
@@ -97,9 +97,9 @@ static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//ScalingExample();
+	ScalingExample();
 	//CombiningTransformationsExample1();
-	CombiningTransformationsExample2();
+	//CombiningTransformationsExample2();
 
 	// set the scale function
 	/*static float Scale = 0.0f;
@@ -312,8 +312,8 @@ int main(int argc, char** argv)
 	int height = 1000;
 	glutInitWindowSize(width, height);
 
-	int x = 200;
-	int y = 100;
+	int x = 400;
+	int y = 0;
 	glutInitWindowPosition(x, y);
 	int win = glutCreateWindow("Tutorial 03");
 	printf("window id: %d\n", win);
