@@ -12,7 +12,7 @@
 
 GLuint VBO;
 GLuint IBO;
-GLuint gWorldLocation;
+GLuint gWVPLocation;
 
 static void RenderSceneCB()
 {
@@ -36,14 +36,26 @@ static void RenderSceneCB()
 							0.0f, 0.0f, 1.0f, 2.0f,
 							0.0f, 0.0f, 0.0f, 1.0f);
 
-	float FOV = 45.0f;
+	// World transformation
+	Matrix4f World = Translation * Rotation;
+
+	Vector3f CameraPos(0.0f, 0.0f, 0.0f);
+	Vector3f U(1.0f, 0.0f, 0.0f);
+	Vector3f V(0.0f, 1.0f, 0.0f);
+	Vector3f N(0.0f, 0.0f, 1.0f);
+
+	Matrix4f Camera(U.x,	U.y,	U.z, -CameraPos.x,
+					V.x,	V.y,	V.z, -CameraPos.y,
+					N.x,	N.y,	N.z, -CameraPos.z,
+					0.0f,	0.0f,	0.0f, 1.0f);
+
+
+	float FOV = 90.0f;
 	float tanHalfFOV = tanf(ToRadian(FOV / 2.0f));
 	float d = 1 / tanHalfFOV;
-
-	// Aspect Ratio
 	float ar = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
 
-	printf("Aspect ratio %f\n", ar);
+	//printf("Aspect ratio %f\n", ar);
 
 	float NearZ = 1.0f;
 	float FarZ = 100.0f;
@@ -59,9 +71,9 @@ static void RenderSceneCB()
 						0.0f, 0.0f, A,    B,
 						0.0f, 0.0f, 1.0f, 0.0f);
 
-	Matrix4f FinalMatrix = Projection * Translation * Rotation;
+	Matrix4f WVP = Projection * Camera * World;
 
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &FinalMatrix.m[0][0]);
+	glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, &WVP.m[0][0]);
 
 	// Bind the buffers respectively
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -262,9 +274,9 @@ static void CompileShaders()
 		exit(1);
 	}*/
 
-	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
-	if (gWorldLocation == -1) {
-		printf("Error getting uniform location of 'gWorld'\n");
+	gWVPLocation = glGetUniformLocation(ShaderProgram, "gWVPLocation");
+	if (gWVPLocation == -1) {
+		printf("Error getting uniform location of 'gWVPLocation'\n");
 		exit(1);
 	}
 
