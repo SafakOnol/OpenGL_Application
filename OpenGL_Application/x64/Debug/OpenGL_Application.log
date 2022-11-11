@@ -1,2 +1,7 @@
-﻿  Main.cpp
+﻿  camera.cpp
+  math_3d.cpp
+  Main.cpp
+  ogldev_util.cpp
+  world_transform.cpp
+  Generating Code...
   OpenGL_Application.vcxproj -> C:\Users\onols\Documents\GitHub\OpenGL_Application_Parent\OpenGL_Application\x64\Debug\OpenGL_Application.exe

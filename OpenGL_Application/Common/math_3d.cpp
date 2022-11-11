@@ -24,9 +24,18 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtx/string_cast.hpp>
 #endif
+
+#ifdef _WIN64
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <cmath>
+#else
+#include <math.h>
+#endif
+
 #include <iostream>
 #include <stdlib.h>
-
 
 #include "ogldev_util.h"
 #include "ogldev_math_3d.h"

@@ -6,6 +6,8 @@
 #include <GL/freeglut.h>
 
 #include "ogldev_math_3d.h"
+#include "camera.h"
+#include "world_transform.h"
 
 #define WINDOW_WIDTH  960
 #define WINDOW_HEIGHT 540
@@ -14,79 +16,46 @@ GLuint VBO;
 GLuint IBO;
 GLuint gWVPLocation;
 
+WorldTransfrom CubeWorldTransform;
+Camera GameCamera;
+
+float FOV = 90.0f;
+float zNear = 1.0f;
+float zFar = 10.0f;
+PersProjInfo persProjInfo = { FOV, WINDOW_WIDTH, WINDOW_HEIGHT, zNear, zFar };
+
 static void RenderSceneCB()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	static float Scale = 0.0f;
-
 #ifdef _WIN64
-	Scale += 0.002f;
+	float YRotationAngle = 0.1f;
 #else
-	Scale += 0.02f;
+	float YRotationAngle = 1.0f;
 #endif
 
-	Matrix4f Rotation(	cosf(Scale),	0.0f,	-sinf(Scale),	0.0f,
-						0.0f,			1.0f,	0.0f,			0.0f,
-						sinf(Scale),	0.0f,	cosf(Scale),	0.0f,
-						0.0f,			0.0f,	0.0f,			1.0f);
+	CubeWorldTransform.SetPosition(0.0f, 0.0f, 2.0f);
+	CubeWorldTransform.Rotate(0.0f, YRotationAngle, 0.0f);
+	Matrix4f World = CubeWorldTransform.GetMatrix();
 
-	Matrix4f Translation(	1.0f, 0.0f, 0.0f, 0.0f,
-							0.0f, 1.0f, 0.0f, 0.0f,
-							0.0f, 0.0f, 1.0f, 2.0f,
-							0.0f, 0.0f, 0.0f, 1.0f);
+	Matrix4f View = GameCamera.GetMatrix();
 
-	// World transformation
-	Matrix4f World = Translation * Rotation;
+	Matrix4f Projection;
+	Projection.InitPersProjTransform(persProjInfo);
 
-	Vector3f CameraPos(0.0f, 0.0f, 0.0f);
-	Vector3f U(1.0f, 0.0f, 0.0f);
-	Vector3f V(0.0f, 1.0f, 0.0f);
-	Vector3f N(0.0f, 0.0f, 1.0f);
-
-	Matrix4f Camera(U.x,	U.y,	U.z, -CameraPos.x,
-					V.x,	V.y,	V.z, -CameraPos.y,
-					N.x,	N.y,	N.z, -CameraPos.z,
-					0.0f,	0.0f,	0.0f, 1.0f);
-
-
-	float FOV = 90.0f;
-	float tanHalfFOV = tanf(ToRadian(FOV / 2.0f));
-	float d = 1 / tanHalfFOV;
-	float ar = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
-
-	//printf("Aspect ratio %f\n", ar);
-
-	float NearZ = 1.0f;
-	float FarZ = 100.0f;
-
-	float zRange = NearZ - FarZ;
-
-	float A = (-FarZ - NearZ) / zRange;
-	float B = 2.0f * FarZ * NearZ / zRange;
-
-
-	Matrix4f Projection(d/ar, 0.0f, 0.0f, 0.0f,
-						0.0f, d,    0.0f, 0.0f,
-						0.0f, 0.0f, A,    B,
-						0.0f, 0.0f, 1.0f, 0.0f);
-
-	Matrix4f WVP = Projection * Camera * World;
+	Matrix4f WVP = Projection * View * World;
 
 	glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, &WVP.m[0][0]);
 
-	// Bind the buffers respectively
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
 	// position
 	glEnableVertexAttribArray(0);
-	// index - size - type - normalized boolean - stride size - pointer
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 
 	// color
 	glEnableVertexAttribArray(1);
-	// color starts at the 4th position (number 3) in the vertex, therefore we set the pointer 3 * size of a float and cast it to a void pointer
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -97,6 +66,17 @@ static void RenderSceneCB()
 	glutPostRedisplay();
 
 	glutSwapBuffers();
+}
+
+static void KeyboardCB(unsigned char key, int mouse_x, int mouse_y)
+{
+	GameCamera.OnKeyboard(key);
+}
+
+
+static void SpecialKeyboardCB(int key, int mouse_x, int mouse_y)
+{
+	GameCamera.OnKeyboard(key);
 }
 
 struct Vertex
@@ -332,6 +312,8 @@ int main(int argc, char** argv)
 	CompileShaders();
 
 	glutDisplayFunc(RenderSceneCB);
+	glutKeyboardFunc(KeyboardCB);
+	glutSpecialFunc(SpecialKeyboardCB);
 
 	glutMainLoop();
 
