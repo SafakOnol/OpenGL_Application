@@ -17,16 +17,34 @@ static void RenderSceneCB()
 
 	static float Scale = 0.0f;
 
-	//    Scale += 0.01f;
+#ifdef _WIN64
+	Scale += 0.002f;
+#else
+	Scale += 0.02f;
+#endif
 
-	Matrix4f World;
+	Matrix4f Rotation(	cosf(Scale),	0.0f,	-sinf(Scale),	0.0f,
+						0.0f,			1.0f,	0.0f,			0.0f,
+						sinf(Scale),	0.0f,	cosf(Scale),	0.0f,
+						0.0f,			0.0f,	0.0f,			1.0f);
 
-	World.m[0][0] = cosf(Scale); World.m[0][1] = -sinf(Scale); World.m[0][2] = 0.0f; World.m[0][3] = 0.0f;
-	World.m[1][0] = sinf(Scale); World.m[1][1] = cosf(Scale); World.m[1][2] = 0.0f; World.m[1][3] = 0.0f;
-	World.m[2][0] = 0.0;         World.m[2][1] = 0.0f;         World.m[2][2] = 1.0f; World.m[2][3] = 0.0f;
-	World.m[3][0] = 0.0f;        World.m[3][1] = 0.0f;         World.m[3][2] = 0.0f; World.m[3][3] = 1.0f;
+	Matrix4f Translation(	1.0f, 0.0f, 0.0f, 0.0f,
+							0.0f, 1.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 1.0f, 1.5f,
+							0.0f, 0.0f, 0.0f, 1.0f);
 
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]);
+	float FOV = 90.0f;
+	float tanHalfFOV = tanf(ToRadian(FOV / 2.0f));
+	float f = 1 / tanHalfFOV;
+
+	Matrix4f Projection(f,	  0.0f, 0.0f, 0.0f,
+						0.0f, f,    0.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f);
+
+	Matrix4f FinalMatrix = Projection * Translation * Rotation;
+
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &FinalMatrix.m[0][0]);
 
 	// Bind the buffers respectively
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -42,7 +60,7 @@ static void RenderSceneCB()
 	// color starts at the 4th position (number 3) in the vertex, therefore we set the pointer 3 * size of a float and cast it to a void pointer
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-	glDrawElements(GL_TRIANGLES, 54, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -61,9 +79,9 @@ struct Vertex
 	// default constructor
 	Vertex() {}
 
-	Vertex(float x, float y)
+	Vertex(float x, float y, float z)
 	{
-		pos = Vector3f(x, y, 0.0f);
+		pos = Vector3f(x, y, z);
 		// get a random value between 0 and 1
 		float red = (float)rand() / (float)RAND_MAX;
 		float green = (float)rand() / (float)RAND_MAX;
@@ -75,34 +93,16 @@ struct Vertex
 
 static void CreateVertexBuffer()
 {
-	Vertex Vertices[19];
+	Vertex Vertices[8];
 
-	// define the coordinates are as per rasterizer (normalized)
-
-	// Center
-	Vertices[0] = Vertex(0.0f, 0.0);
-
-	// Top row
-	Vertices[1] = Vertex(-1.0f, 1.0f);
-	Vertices[2] = Vertex(-0.75f, 1.0f);
-	Vertices[3] = Vertex(-0.50f, 1.0f);
-	Vertices[4] = Vertex(-0.25f, 1.0f);
-	Vertices[5] = Vertex(-0.0f, 1.0f);
-	Vertices[6] = Vertex(0.25f, 1.0f);
-	Vertices[7] = Vertex(0.50f, 1.0f);
-	Vertices[8] = Vertex(0.75f, 1.0f);
-	Vertices[9] = Vertex(1.0f, 1.0f);
-
-	// Bottom row
-	Vertices[10] = Vertex(-1.0f, -1.0f);
-	Vertices[11] = Vertex(-0.75f, -1.0f);
-	Vertices[12] = Vertex(-0.50f, -1.0f);
-	Vertices[13] = Vertex(-0.25f, -1.0f);
-	Vertices[14] = Vertex(-0.0f, -1.0f);
-	Vertices[15] = Vertex(0.25f, -1.0f);
-	Vertices[16] = Vertex(0.50f, -1.0f);
-	Vertices[17] = Vertex(0.75f, -1.0f);
-	Vertices[18] = Vertex(1.0f, -1.0f);
+	Vertices[0] = Vertex(0.5f, 0.5f, 0.5f);
+	Vertices[1] = Vertex(-0.5f, 0.5f, -0.5f);
+	Vertices[2] = Vertex(-0.5f, 0.5f, 0.5f);
+	Vertices[3] = Vertex(0.5f, -0.5f, -0.5f);
+	Vertices[4] = Vertex(-0.5f, -0.5f, -0.5f);
+	Vertices[5] = Vertex(0.5f, 0.5f, -0.5f);
+	Vertices[6] = Vertex(0.5f, -0.5f, 0.5f);
+	Vertices[7] = Vertex(-0.5f, -0.5f, 0.5f);
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -111,36 +111,24 @@ static void CreateVertexBuffer()
 
 static void CreateIndexBuffer()
 {
-	unsigned int Indices[] = { // Top triangles
-							   0, 2, 1,
-							   0, 3, 2,
-							   0, 4, 3,
-							   0, 5, 4,
-							   0, 6, 5,
-							   0, 7, 6,
-							   0, 8, 7,
-							   0, 9, 8,
-
-							   // Bottom triangles
-							   0, 10, 11,
-							   0, 11, 12,
-							   0, 12, 13,
-							   0, 13, 14,
-							   0, 14, 15,
-							   0, 15, 16,
-							   0, 16, 17,
-							   0, 17, 18,
-
-							   // Left triangle
-							   0, 1, 10,
-
-							   // Right triangle
-							   0, 18, 9 };
-
+	unsigned int Indices[] = {
+							 0, 1, 2,
+							 1, 3, 4,
+							 5, 6, 3,
+							 7, 3, 6,
+							 2, 4, 7,
+							 0, 7, 6,
+							 0, 5, 1,
+							 1, 5, 3,
+							 5, 0, 6,
+							 7, 4, 3,
+							 2, 1, 4,
+							 0, 2, 7
+	};
 
 	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO); // GL_ELEMENT_BUFFER binds index buffers
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW); // Load the indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -306,6 +294,10 @@ int main(int argc, char** argv)
 
 	GLclampf Red = 0.0f, Green = 0.0f, Blue = 0.0f, Alpha = 0.0f;
 	glClearColor(Red, Green, Blue, Alpha);
+
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
+	glCullFace(GL_BACK);
 
 	CreateVertexBuffer();
 	CreateIndexBuffer();
