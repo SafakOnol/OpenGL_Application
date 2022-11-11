@@ -7,6 +7,9 @@
 
 #include "ogldev_math_3d.h"
 
+#define WINDOW_WIDTH  960
+#define WINDOW_HEIGHT 540
+
 GLuint VBO;
 GLuint IBO;
 GLuint gWorldLocation;
@@ -30,16 +33,30 @@ static void RenderSceneCB()
 
 	Matrix4f Translation(	1.0f, 0.0f, 0.0f, 0.0f,
 							0.0f, 1.0f, 0.0f, 0.0f,
-							0.0f, 0.0f, 1.0f, 1.5f,
+							0.0f, 0.0f, 1.0f, 2.0f,
 							0.0f, 0.0f, 0.0f, 1.0f);
 
-	float FOV = 90.0f;
+	float FOV = 45.0f;
 	float tanHalfFOV = tanf(ToRadian(FOV / 2.0f));
-	float f = 1 / tanHalfFOV;
+	float d = 1 / tanHalfFOV;
 
-	Matrix4f Projection(f,	  0.0f, 0.0f, 0.0f,
-						0.0f, f,    0.0f, 0.0f,
-						0.0f, 0.0f, 1.0f, 0.0f,
+	// Aspect Ratio
+	float ar = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+
+	printf("Aspect ratio %f\n", ar);
+
+	float NearZ = 1.0f;
+	float FarZ = 100.0f;
+
+	float zRange = NearZ - FarZ;
+
+	float A = (-FarZ - NearZ) / zRange;
+	float B = 2.0f * FarZ * NearZ / zRange;
+
+
+	Matrix4f Projection(d/ar, 0.0f, 0.0f, 0.0f,
+						0.0f, d,    0.0f, 0.0f,
+						0.0f, 0.0f, A,    B,
 						0.0f, 0.0f, 1.0f, 0.0f);
 
 	Matrix4f FinalMatrix = Projection * Translation * Rotation;
@@ -274,14 +291,12 @@ int main(int argc, char** argv)
 #endif
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-	int width = 1000;
-	int height = 1000;
-	glutInitWindowSize(width, height);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	int x = 400;
 	int y = 0;
 	glutInitWindowPosition(x, y);
-	int win = glutCreateWindow("Tutorial 10");
+	int win = glutCreateWindow("Tutorial 12");
 	printf("window id: %d\n", win);
 
 	// Must be done after glut is initialized!
